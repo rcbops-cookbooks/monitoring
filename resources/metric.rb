@@ -22,7 +22,8 @@ actions :measure
 attribute :name, :kind_of => String
 attribute :type, :kind_of => String, :equal_to => [ "disk", "proc", "pyscript",
                                                     "syslog", "cpu", "interface",
-                                                    "memory", "swap", "load" ]
+                                                    "memory", "swap", "load",
+                                                    "libvirt" ]
 
 # PROC
 # regex match of proc to monitor
@@ -35,10 +36,12 @@ attribute :proc_regex, :kind_of => String
 # what the lowest common denominator is.  Something that emits
 # KV pairs, maybe?
 attribute :script, :kind_of => String
-attribute :variables, :kind_of => Hash
+attribute :variables, :kind_of => Hash   # for template
+attribute :options, :kind_of => Hash     # for monitoring provider
 
 # SYSLOG
 attribute :log_level, :kind_of => String, :default => "Info"
+
 
 def initialize(name, run_context=nil)
   super

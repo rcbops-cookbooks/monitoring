@@ -57,6 +57,7 @@ def pyscript_metric(new_resource)
       owner "root"
       group "root"
       mode "0644"
+      options new_resource.options
     end
   end
 
@@ -89,6 +90,15 @@ end
 
 def load_metric(new_resource)
   collectd_plugin "load"
+end
+
+def libvirt_metric(new_resource)
+  collectd_plugin "libvirt" do
+    options(:connection => "qemu:///system",
+            :hostname_format => "name",
+            :refresh_interval => 60
+            )
+  end
 end
 
 # Set up a threshold config
