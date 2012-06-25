@@ -60,9 +60,9 @@ that can be overriden or enhanced.
 To use a monitoring provider, set the appropriate provider using the
 attributes above, and then create a monitoring definition:
 
-  monitoring_metric "syslog" do
-    type "syslog"
-  end
+    monitoring_metric "syslog" do
+      type "syslog"
+    end
 
 Valid types include:
 
@@ -87,11 +87,11 @@ provider-specific location from a cookbook_file.  If the script ends
 with ".erb", it will template it, using any options provided.
 Example:
 
-  monitoring_metric "cluster-stats" do
-    type "pyscript"
-    script "cluster-stats.py.erb"
-    options("endpoint" => "http://localhost:8080/" ... )
-  end
+    monitoring_metric "cluster-stats" do
+      type "pyscript"
+      script "cluster-stats.py.erb"
+      options("endpoint" => "http://localhost:8080/" ... )
+    end
 
 In the future, it would be groovy to make arbitrary scripts in
 arbitrary languages that emit data in "key=value" format, and convert
@@ -114,11 +114,11 @@ system does.
 
 Example:
 
-  monitoring_procmon "apache" do
-    process_name "apache2"
-    start_cmd "/etc/init.d/apache2 start"
-    stop_cmd "/etc/init.d/apache2 stop"
-  end
+    monitoring_procmon "apache" do
+      process_name "apache2"
+      start_cmd "/etc/init.d/apache2 start"
+      stop_cmd "/etc/init.d/apache2 stop"
+    end
 
 It's possible to tune this further using the monit cookbook, but this
 basically just does the defaults.  Again, with the welcoming patches.
