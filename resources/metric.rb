@@ -23,7 +23,7 @@ attribute :name, :kind_of => String
 attribute :type, :kind_of => String, :equal_to => [ "disk", "proc", "pyscript",
                                                     "syslog", "cpu", "interface",
                                                     "memory", "swap", "load",
-                                                    "libvirt" ]
+                                                    "libvirt", "mysql" ]
 
 # PROC
 # regex match of proc to monitor
@@ -42,6 +42,12 @@ attribute :options, :kind_of => Hash     # for monitoring provider
 # SYSLOG
 attribute :log_level, :kind_of => String, :default => "Info"
 
+# MYSQL
+attribute :host, :kind_of => String, :default => "localhost"
+attribute :user, :kind_of => String, :default => nil
+attribute :password, :kind_of => String, :default => nil
+attribute :port, :kind_of => Integer, :default => 3306
+attribute :db, :kind_of => String
 
 def initialize(name, run_context=nil)
   super
