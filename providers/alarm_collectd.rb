@@ -17,7 +17,7 @@
 
 
 def disk_alert(new_resource)
-  collectd_threshold "#{new_resource.mountpoint.split('/').drop(1).join('-')}" do
+  collectd_threshold new_resource.mountpoint.split('/').drop(1).join('-') do
     options("plugin_df" => {
               "type_df" => {
                 :data_source => "used",

@@ -60,7 +60,9 @@ def pyscript_metric(new_resource)
     end
   end
 
-  collectd_python_plugin new_resource.script.gsub("\.py", "")
+  collectd_python_plugin new_resource.script.gsub("\.py", "") do
+    options new_resource.options
+  end
 end
 
 def syslog_metric(new_resource)
@@ -89,6 +91,36 @@ end
 
 def load_metric(new_resource)
   collectd_plugin "load"
+end
+
+def libvirt_metric(new_resource)
+  collectd_plugin "libvirt" do
+    options(:connection => "qemu:///system",
+            :hostname_format => "name",
+            :refresh_interval => 60
+            )
+  end
+end
+
+def mysql_metric(new_resource)
+  options = {}
+
+  [ "db", "host", "user", "password", "port"].each do |attr|
+    if new_resource.send(attr)
+      options[attr.capitalize] = new_resource.send(attr)
+    end
+  end
+
+  options.merge({"MasterStats" => false })
+
+  node["monitoring"]["dbs"] ||= {}
+  node["monitoring"]["dbs"][options["db"]] = options
+
+  collectd_plugin "mysql" do
+    template "collectd-plugin-mysql.conf.erb"
+    cookbook "monitoring"
+    options node["monitoring"]["dbs"]
+  end
 end
 
 # Set up a threshold config
