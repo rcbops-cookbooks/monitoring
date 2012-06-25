@@ -77,10 +77,10 @@ Valid types include:
 In addition, there is a "pyscript" provider that in the case of collectd
 expects a collectd python plugin:
 
-  monitoring_metric "cluster-stats" do
-    type "pyscript"
-    script "cluster-stats.py"
-  end
+    monitoring_metric "cluster-stats" do
+      type "pyscript"
+      script "cluster-stats.py"
+    end
 
 In this format, it will generate cluster-stats.py in the appropriate
 provider-specific location from a cookbook_file.  If the script ends
