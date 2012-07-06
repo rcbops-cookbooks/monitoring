@@ -134,5 +134,6 @@ action :measure do
     Chef::Log.error("Selected metric provider (collectd) cannot provide metric #{new_resource.type}")
   else
     self.send("#{new_resource.type}_metric".to_sym, new_resource)
+    new_resource.updated_by_last_action(true)
   end
 end

@@ -35,4 +35,5 @@ action :alarm do
     when "disk"
     disk_alert new_resource
   end
+  new_resource.updated_by_last_action(true)
 end
