@@ -59,9 +59,9 @@ def pyscript_metric(new_resource)
       mode "0644"
     end
   end
-
+  
   collectd_python_plugin new_resource.script.gsub("\.py", "") do
-    options new_resource.options
+    options "modules" => new_resource.script
   end
 end
 
