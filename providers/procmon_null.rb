@@ -17,4 +17,5 @@
 
 action :monitor do
   Chef::Log.debug("Setting up null procmon (#{new_resource.name})")
+  new_resource.updated_by_last_action(false)
 end
