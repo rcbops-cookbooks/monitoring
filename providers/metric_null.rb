@@ -18,4 +18,5 @@
 # Set up a measure config
 action :measure do
   Chef::Log.debug("Null metric for (#{new_resource.type}/#{new_resource.name})")
+  new_resource.updated_by_last_action(false)
 end
