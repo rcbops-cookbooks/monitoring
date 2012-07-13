@@ -65,7 +65,7 @@ def set_platform_default_providers
   end
 
   # this repeated conflation of strings and symbols is bothersome
-  Chef::Platform.set(:platform => node.platform.to_sym,
+  Chef::Platform.set(:platform => node["platform"].to_sym,
                      :resource => :monitoring_metric,
                      :provider => provider
                      )

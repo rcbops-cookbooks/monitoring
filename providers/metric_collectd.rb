@@ -59,9 +59,9 @@ def pyscript_metric(new_resource)
       mode "0644"
     end
   end
-
+  
   collectd_python_plugin new_resource.script.gsub("\.py", "") do
-    options new_resource.options
+    options "modules" => new_resource.script
   end
 end
 
@@ -134,5 +134,6 @@ action :measure do
     Chef::Log.error("Selected metric provider (collectd) cannot provide metric #{new_resource.type}")
   else
     self.send("#{new_resource.type}_metric".to_sym, new_resource)
+    new_resource.updated_by_last_action(true)
   end
 end

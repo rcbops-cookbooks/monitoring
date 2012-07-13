@@ -18,5 +18,5 @@
 # Set up a threshold config
 action :alarm do
   Chef::Log.debug("Null alarm for (#{new_resource.name})")
-
+  new_resource.updated_by_last_action(false)
 end
