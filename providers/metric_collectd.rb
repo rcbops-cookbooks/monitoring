@@ -114,12 +114,12 @@ def mysql_metric(new_resource)
   options.merge({"MasterStats" => false })
 
   node["monitoring"]["dbs"] ||= {}
-  node["monitoring"]["dbs"][options["db"]] = options
-
+  node["monitoring"]["dbs"][options["Db"]] = options
+  
   collectd_plugin "mysql" do
     template "collectd-plugin-mysql.conf.erb"
     cookbook "monitoring"
-    options node["monitoring"]["dbs"]
+    options(:databases => node["monitoring"]["dbs"])
   end
 end
 
