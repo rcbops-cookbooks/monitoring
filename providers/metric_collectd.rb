@@ -37,7 +37,7 @@ def proc_metric(new_resource)
 end
 
 # This is kind of hokey, and needs to be re-done in a provider
-# indepenant way.  This really assumes that the python scripts are
+# independent way.  This really assumes that the python scripts are
 # native collectd plugins, which doesn't make them very useful outside
 # of collectd.
 def pyscript_metric(new_resource)
@@ -59,7 +59,7 @@ def pyscript_metric(new_resource)
       mode "0644"
     end
   end
-  
+
   collectd_python_plugin new_resource.script.gsub("\.py", "") do
     options(:modules => new_resource.script)
   end
@@ -105,7 +105,7 @@ end
 def mysql_metric(new_resource)
   options = {}
 
-  [ "db", "host", "user", "password", "port"].each do |attr|
+  [ "host", "user", "password", "port"].each do |attr|
     if new_resource.send(attr)
       options[attr.capitalize] = new_resource.send(attr)
     end
@@ -114,7 +114,7 @@ def mysql_metric(new_resource)
   options.merge({"MasterStats" => false })
 
   node["monitoring"]["dbs"] ||= {}
-  node["monitoring"]["dbs"][options["Db"]] = options
+  node["monitoring"]["dbs"][new_resource.db] = options
   
   collectd_plugin "mysql" do
     template "collectd-plugin-mysql.conf.erb"
