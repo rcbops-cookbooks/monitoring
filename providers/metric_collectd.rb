@@ -61,7 +61,7 @@ def pyscript_metric(new_resource)
   end
   
   collectd_python_plugin new_resource.script.gsub("\.py", "") do
-    options "modules" => new_resource.script
+    options(:modules => new_resource.script)
   end
 end
 
