@@ -41,6 +41,11 @@ end
 # native collectd plugins, which doesn't make them very useful outside
 # of collectd.
 def pyscript_metric(new_resource)
+  if platform?("ubuntu") #work around bad package dependencies
+    package "libpython2.7" do
+      action :upgrade
+    end
+  end
   if new_resource.script.match("\.erb$")
     # it's a template file
     base_script = new_resource.script.split(".")[0...-1].join(".")
