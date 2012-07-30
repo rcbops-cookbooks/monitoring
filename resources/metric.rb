@@ -22,10 +22,15 @@ include Chef::Mixin::LanguageIncludeRecipe
 actions :measure
 
 attribute :name, :kind_of => String
-attribute :type, :kind_of => String, :equal_to => [ "disk", "proc", "pyscript",
-                                                    "syslog", "cpu", "interface",
-                                                    "memory", "swap", "load",
-                                                    "libvirt", "mysql" ]
+attribute :type, :kind_of => String, :equal_to => [ "syslog", "load",
+                                                    "df", "disk",
+                                                    "interface" ]
+
+# Thresholds
+attribute :warning_max, :kind_of => String
+attribute :warning_min, :kind_of => String
+attribute :failure_max, :kind_of => String
+attribute :failure_min, :kind_of => String
 
 # PROC
 # regex match of proc to monitor
@@ -50,6 +55,20 @@ attribute :user, :kind_of => String, :default => nil
 attribute :password, :kind_of => String, :default => nil
 attribute :port, :kind_of => Integer, :default => 3306
 attribute :db, :kind_of => String
+
+# DF
+attribute :mountpoint, :kind_of => String
+attribute :ignore_fs, :kind_of => Array, :default => [ "proc", "sysfs",
+                                                       "fusectl", "debugfs",
+                                                       "securityfs",
+                                                       "devtmpfs", "devpts",
+                                                       "tmpfs", "xenfs" ]
+
+# INTERFACE
+attribute :interface, :kind_of => String
+
+# disk
+attribute :device, :kind_of => String
 
 def initialize(name, run_context=nil)
   super
