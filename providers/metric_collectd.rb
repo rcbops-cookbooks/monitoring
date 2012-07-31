@@ -124,6 +124,15 @@ def pyscript_metric(new_resource)
   collectd_python_plugin new_resource.script.gsub("\.py", "") do
     options(:modules => new_resource.script)
   end
+
+  if new_resource.respond_to?("alarms")
+    # we need to make monitors for these
+    new_resource.alarms.each_pair do |plugin, warnings|
+      collectd_threshold "#{new_resource.name}-#{plugin.gsub(".","-")}-threshold" do
+        options({ "plugin_#{plugin}" => warnings })
+      end
+    end
+  end
 end
 
 def syslog_metric(new_resource)
@@ -213,6 +222,18 @@ def mysql_metric(new_resource)
     template "collectd-plugin-mysql.conf.erb"
     cookbook "monitoring"
     options(:databases => node["monitoring"]["dbs"])
+  end
+
+  Chef::Log.error(new_resource)
+
+  new_resource.alarms.each_pair do |alarm, thresholds|
+    collectd_threshold "mysql-#{alarm}-threshold" do
+      options("host_#{new_resource.host}" => {
+                "plugin_mysql" => { "type_mysql_threads" => {
+                    :data_source => "connected"
+                  }.merge(thresholds.inject({}) { |hsh,(k,v)| hsh.merge(k=>v.to_f) })
+                }})
+    end
   end
 end
 
