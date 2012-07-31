@@ -24,7 +24,8 @@ actions :measure
 attribute :name, :kind_of => String
 attribute :type, :kind_of => String, :equal_to => [ "syslog", "load",
                                                     "df", "disk",
-                                                    "interface" ]
+                                                    "interface", "pyscript",
+                                                    "mysql" ]
 
 # Thresholds
 attribute :warning_max, :kind_of => String
@@ -45,6 +46,7 @@ attribute :proc_regex, :kind_of => String
 attribute :script, :kind_of => String
 attribute :variables, :kind_of => Hash   # for template
 attribute :options, :kind_of => Hash     # for monitoring provider
+attribute :alarms, :kind_of => Hash      # k/v k=plugin (metric), v=warn/fail
 
 # SYSLOG
 attribute :log_level, :kind_of => String, :default => "Info"
