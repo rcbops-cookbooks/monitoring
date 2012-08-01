@@ -25,7 +25,7 @@ attribute :name, :kind_of => String
 attribute :type, :kind_of => String, :equal_to => [ "syslog", "load",
                                                     "df", "disk",
                                                     "interface", "pyscript",
-                                                    "mysql" ]
+                                                    "mysql", "proc" ]
 
 # Thresholds
 attribute :warning_max, :kind_of => String
@@ -35,7 +35,8 @@ attribute :failure_min, :kind_of => String
 
 # PROC
 # regex match of proc to monitor
-attribute :proc_regex, :kind_of => String
+attribute :proc_name, :kind_of => String
+attribute :proc_regex, :kind_of => String, :default => nil
 
 # PYTHON
 # Right now, this is provider dependant.  It should be
@@ -46,7 +47,7 @@ attribute :proc_regex, :kind_of => String
 attribute :script, :kind_of => String
 attribute :variables, :kind_of => Hash   # for template
 attribute :options, :kind_of => Hash     # for monitoring provider
-attribute :alarms, :kind_of => Hash      # k/v k=plugin (metric), v=warn/fail
+attribute :alarms, :kind_of => Hash, :default => {}
 
 # SYSLOG
 attribute :log_level, :kind_of => String, :default => "Info"
