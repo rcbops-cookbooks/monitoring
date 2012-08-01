@@ -56,18 +56,39 @@ def df_metric(new_resource)
       }
     }
 
-    collectd_threshold "#{instance_name}-threshold" do
+    collectd_threshold "#{instance_name}" do
       options alert_options
     end
   end
 end
 
 def proc_metric(new_resource)
-  node["monitoring"]["procs"] ||= []
-  node["monitoring"]["procs"] << new_resource.proc_regex unless node["monitoring"]["procs"].include?(new_resource.proc_regex)
+  # these used to be in arrays, so we'll convert them to
+  # hashes to keep from breaking existing install
 
-  collectd_plugin "process" do
-    options(:process_match => node["monitoring"]["procs"])
+  node["monitoring"]["procs"] ||= {}
+  node["monitoring"]["procs"][new_resource.proc_name] = new_resource.proc_regex
+
+  matches = node["monitoring"]["procs"].reject {|k,v| v.nil? }
+  process = node["monitoring"]["procs"].select {|k,v| v.nil? }
+
+  collectd_plugin "processes" do
+    template "collectd-plugin-processes.conf.erb"
+    cookbook "monitoring"
+
+    options(:process_match => Hash[*matches.flatten],
+            :process => Hash[*process.flatten].keys)
+
+  end
+
+  if new_resource.respond_to?("alarms")
+    collectd_threshold "#{new_resource.name}" do
+      options({ "plugin_processes" => {
+                  :instance => new_resource.proc_name,
+                  "type_ps_count" => {
+                    :data_source => "processes"
+                  }.merge(new_resource.alarms)}})
+    end
   end
 end
 
@@ -85,7 +106,7 @@ def disk_metric(new_resource)
       }
     }
 
-    collectd_threshold "#{new_resource.name}-threshold" do
+    collectd_threshold "#{new_resource.name}" do
       options alert_options
     end
   end
@@ -125,10 +146,10 @@ def pyscript_metric(new_resource)
     options(:modules => new_resource.script)
   end
 
-  if new_resource.respond_to?("alarms")
+  unless new_resource.alarms.nil?
     # we need to make monitors for these
     new_resource.alarms.each_pair do |plugin, warnings|
-      collectd_threshold "#{new_resource.name}-#{plugin.gsub(".","-")}-threshold" do
+      collectd_threshold "#{new_resource.name}-#{plugin.gsub(".","-")}" do
         options({ "plugin_#{plugin}" => warnings })
       end
     end
@@ -161,7 +182,7 @@ def interface_metric(new_resource)
         }
       }
 
-      collectd_threshold "#{new_resource.name}-#{ds}-threshold" do
+      collectd_threshold "#{new_resource.name}-#{ds}" do
         options alert_options
       end
     end
@@ -189,7 +210,7 @@ def load_metric(new_resource)
       }
     }
 
-    collectd_threshold "#{new_resource.name}-threshold" do
+    collectd_threshold "#{new_resource.name}" do
       options alert_options
     end
   end
@@ -227,7 +248,7 @@ def mysql_metric(new_resource)
   Chef::Log.error(new_resource)
 
   new_resource.alarms.each_pair do |alarm, thresholds|
-    collectd_threshold "mysql-#{alarm}-threshold" do
+    collectd_threshold "mysql-#{alarm}" do
       options("host_#{new_resource.host}" => {
                 "plugin_mysql" => { "type_mysql_threads" => {
                     :data_source => "connected"
