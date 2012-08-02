@@ -56,7 +56,7 @@ def df_metric(new_resource)
       }
     }
 
-    collectd_threshold "#{instance_name}" do
+    collectd_threshold instance_name do
       options alert_options
     end
   end
@@ -81,14 +81,12 @@ def proc_metric(new_resource)
 
   end
 
-  if new_resource.respond_to?("alarms")
-    collectd_threshold "#{new_resource.name}" do
-      options({ "plugin_processes" => {
-                  :instance => new_resource.proc_name,
-                  "type_ps_count" => {
-                    :data_source => "processes"
-                  }.merge(new_resource.alarms)}})
-    end
+  collectd_threshold new_resource.name do
+    options({ "plugin_processes" => {
+                :instance => new_resource.proc_name,
+                "type_ps_count" => {
+                  :data_source => "processes"
+                }.merge(new_resource.alarms)}})
   end
 end
 
@@ -106,7 +104,7 @@ def disk_metric(new_resource)
       }
     }
 
-    collectd_threshold "#{new_resource.name}" do
+    collectd_threshold new_resource.name do
       options alert_options
     end
   end
@@ -118,11 +116,13 @@ end
 # native collectd plugins, which doesn't make them very useful outside
 # of collectd.
 def pyscript_metric(new_resource)
-  if platform?("ubuntu") #work around bad package dependencies
+  # IGNORE FOODCRITIC FC023
+  if platform?("ubuntu")
     package "libpython2.7" do
       action :upgrade
     end
   end
+
   if new_resource.script.match("\.erb$")
     # it's a template file
     base_script = new_resource.script.split(".")[0...-1].join(".")
@@ -210,7 +210,7 @@ def load_metric(new_resource)
       }
     }
 
-    collectd_threshold "#{new_resource.name}" do
+    collectd_threshold new_resource.name do
       options alert_options
     end
   end
