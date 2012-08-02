@@ -17,25 +17,101 @@
 # limitations under the License.
 #
 
-def disk_metric(new_resource)
+def _must_has_alerting(new_resource)
+  @alarm_keys.each do |key|
+    return true if new_resource.respond_to?(key.to_s)
+  end
+
+  return false
+end
+
+def _alarm_keys(new_resource)
+  @alarm_keys.inject({}) do |hsh, v|
+    if new_resource.send(v.to_s)
+      value = new_resource.send(v.to_s)
+      hsh.merge(v => new_resource.send(v.to_s).to_f)
+    else
+      hsh
+    end
+  end
+end
+
+def df_metric(new_resource)
   collectd_plugin "df" do
     options(:report_reserved => false,
-            "FSType" => [ "proc", "sysfs", "fusectl", "debugfs", "securityfs",
-                          "devtmpfs", "devpts", "tmpfs" ],
+            "FSType" => new_resource.ignore_fs,
             :ignore_selected => true)
   end
 
-  collectd_plugin "disk"
+  if _must_has_alerting(new_resource)
+    instance_name = new_resource.mountpoint.split("/").drop(1).join("-")
+    instance_name = "root" if instance_name == ""
+
+    alert_options = {
+      "plugin_df" => {
+        "type_df" => {
+          :instance => instance_name,
+          :data_source => "used",
+        }.merge(_alarm_keys(new_resource))
+      }
+    }
+
+    collectd_threshold "#{instance_name}" do
+      options alert_options
+    end
+  end
 end
 
 def proc_metric(new_resource)
-  node["monitoring"]["procs"] ||= []
-  node["monitoring"]["procs"] << new_resource.proc_regex unless node["monitoring"]["procs"].include?(new_resource.proc_regex)
+  # these used to be in arrays, so we'll convert them to
+  # hashes to keep from breaking existing install
 
-  collectd_plugin "process" do
-    options(:process_match => node["monitoring"]["procs"])
+  node["monitoring"]["procs"] ||= {}
+  node["monitoring"]["procs"][new_resource.proc_name] = new_resource.proc_regex
+
+  matches = node["monitoring"]["procs"].reject {|k,v| v.nil? }
+  process = node["monitoring"]["procs"].select {|k,v| v.nil? }
+
+  collectd_plugin "processes" do
+    template "collectd-plugin-processes.conf.erb"
+    cookbook "monitoring"
+
+    options(:process_match => Hash[*matches.flatten],
+            :process => Hash[*process.flatten].keys)
+
+  end
+
+  if new_resource.respond_to?("alarms")
+    collectd_threshold "#{new_resource.name}" do
+      options({ "plugin_processes" => {
+                  :instance => new_resource.proc_name,
+                  "type_ps_count" => {
+                    :data_source => "processes"
+                  }.merge(new_resource.alarms)}})
+    end
   end
 end
+
+# disk metric
+def disk_metric(new_resource)
+  collectd_plugin "disk"
+
+  if _must_has_alerting(new_resource)
+    alert_options = {
+      "plugin_disk" => {
+        :instance => new_resource.device,
+        "type_disk_ops" => {
+          :data_source => "write"
+        }.merge(_alarm_keys(new_resource))
+      }
+    }
+
+    collectd_threshold "#{new_resource.name}" do
+      options alert_options
+    end
+  end
+end
+
 
 # This is kind of hokey, and needs to be re-done in a provider
 # independent way.  This really assumes that the python scripts are
@@ -69,6 +145,15 @@ def pyscript_metric(new_resource)
   collectd_python_plugin new_resource.script.gsub("\.py", "") do
     options(:modules => new_resource.script)
   end
+
+  unless new_resource.alarms.nil?
+    # we need to make monitors for these
+    new_resource.alarms.each_pair do |plugin, warnings|
+      collectd_threshold "#{new_resource.name}-#{plugin.gsub(".","-")}" do
+        options({ "plugin_#{plugin}" => warnings })
+      end
+    end
+  end
 end
 
 def syslog_metric(new_resource)
@@ -85,6 +170,24 @@ def interface_metric(new_resource)
   collectd_plugin "interface" do
     options :interface => "lo", :ignore_selected => true
   end
+
+  if _must_has_alerting(new_resource)
+    [ "rx", "tx" ].each do |ds|
+      alert_options = {
+        "plugin_interface" => {
+          "type_if_octets" => {
+            :instance => new_resource.interface,
+            :data_source => ds,
+          }.merge(_alarm_keys(new_resource))
+        }
+      }
+
+      collectd_threshold "#{new_resource.name}-#{ds}" do
+        options alert_options
+      end
+    end
+  end
+
 end
 
 def memory_metric(new_resource)
@@ -97,6 +200,20 @@ end
 
 def load_metric(new_resource)
   collectd_plugin "load"
+
+  if _must_has_alerting(new_resource)
+    alert_options = {
+      "plugin_load" => {
+        "type_load" => {
+          :data_source => "midterm"
+        }.merge(_alarm_keys(new_resource))
+      }
+    }
+
+    collectd_threshold "#{new_resource.name}" do
+      options alert_options
+    end
+  end
 end
 
 def libvirt_metric(new_resource)
@@ -121,11 +238,23 @@ def mysql_metric(new_resource)
 
   node["monitoring"]["dbs"] ||= {}
   node["monitoring"]["dbs"][new_resource.db] = options
-  
+
   collectd_plugin "mysql" do
     template "collectd-plugin-mysql.conf.erb"
     cookbook "monitoring"
     options(:databases => node["monitoring"]["dbs"])
+  end
+
+  Chef::Log.error(new_resource)
+
+  new_resource.alarms.each_pair do |alarm, thresholds|
+    collectd_threshold "mysql-#{alarm}" do
+      options("host_#{new_resource.host}" => {
+                "plugin_mysql" => { "type_mysql_threads" => {
+                    :data_source => "connected"
+                  }.merge(thresholds.inject({}) { |hsh,(k,v)| hsh.merge(k=>v.to_f) })
+                }})
+    end
   end
 end
 
@@ -136,6 +265,9 @@ end
 #
 action :measure do
   # we'll absorb metrics we don't understand.
+  @alarm_keys = [ :failure_max, :failure_min, :warning_max, :warning_min ]
+
+
   if not self.respond_to?("#{new_resource.type}_metric")
     Chef::Log.error("Selected metric provider (collectd) cannot provide metric #{new_resource.type}")
   else
