@@ -143,7 +143,7 @@ def pyscript_metric(new_resource)
   end
 
   collectd_python_plugin new_resource.script.gsub("\.py", "") do
-    options(:modules => new_resource.script)
+    options( new_resources.options || {} )
   end
 
   unless new_resource.alarms.nil?
