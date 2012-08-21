@@ -116,7 +116,8 @@ end
 # native collectd plugins, which doesn't make them very useful outside
 # of collectd.
 def pyscript_metric(new_resource)
-  node.set["monitoring"]["pyscripts"][new_resource.name] = (new_resource.options || {})
+  mod_name = new_resource.script.sub(/\.(py|erb)$/,"")
+  node.set["monitoring"]["pyscripts"][mod_name] = (new_resource.options || {})
 
   # IGNORE FOODCRITIC FC023
   if platform?("ubuntu")
