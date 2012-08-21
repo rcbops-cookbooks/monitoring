@@ -116,6 +116,8 @@ end
 # native collectd plugins, which doesn't make them very useful outside
 # of collectd.
 def pyscript_metric(new_resource)
+  node.set["monitoring"]["pyscripts"][new_resource.name] = new_resource.options
+
   # IGNORE FOODCRITIC FC023
   if platform?("ubuntu")
     package "libpython2.7" do
@@ -142,10 +144,15 @@ def pyscript_metric(new_resource)
     end
   end
 
-  collectd_python_plugin new_resource.script.gsub("\.py", "") do
-    options( new_resource.options || {} )
+  #collectd cookbook's pythonplugin template requires all monitored
+  #things to be passed in at once in the format
+  #options["modules"]["script"]=ValidCollectdOptions
+  collectd_plugin "python" do
+    template "collectd-plugin-python.conf.erb"
+    cookbook "monitoring"
+    options(:modules => node["monitoring"]["pyscripts"],
+            :paths => [node["collectd"]["plugin_dir"]])
   end
-
   unless new_resource.alarms.nil?
     # we need to make monitors for these
     new_resource.alarms.each_pair do |plugin, warnings|
