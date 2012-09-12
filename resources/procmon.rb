@@ -29,6 +29,8 @@ actions :monitor
 
 attribute :name, :kind_of => String
 attribute :process_name, :kind_of => String
+attribute :service_bin, :kind_of => String
+attribute :script_name, :kind_of => String
 attribute :start_cmd, :kind_of => String
 attribute :stop_cmd, :kind_of => String
 
