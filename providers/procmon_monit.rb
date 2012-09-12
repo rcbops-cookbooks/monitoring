@@ -29,6 +29,8 @@ action :monitor do
     process_name new_resource.process_name
     start_cmd new_resource.start_cmd
     stop_cmd new_resource.stop_cmd
+    service_bin new_resource.service_bin
+    script_name new_resource.script_name
   end
   new_resource.updated_by_last_action(true)
 end
