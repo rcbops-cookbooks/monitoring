@@ -126,10 +126,11 @@ def pyscript_metric(new_resource)
     end
   end
 
+  platform_options = node["collectd"]["platform"]
   if new_resource.script.match("\.erb$")
     # it's a template file
     base_script = new_resource.script.split(".")[0...-1].join(".")
-    template ::File.join(node["collectd"]["plugin_dir"], base_script) do
+    template ::File.join(platform_options["collectd_plugin_dir"], base_script) do
       source new_resource.script
       owner "root"
       group "root"
@@ -137,7 +138,7 @@ def pyscript_metric(new_resource)
       variables new_resource.variables
     end
   else
-    cookbook_file ::File.join(node["collectd"]["plugin_dir"], new_resource.script) do
+    cookbook_file ::File.join(platform_options["collectd_plugin_dir"], new_resource.script) do
       source new_resource.script
       owner "root"
       group "root"
@@ -152,7 +153,7 @@ def pyscript_metric(new_resource)
     template "collectd-plugin-python.conf.erb"
     cookbook "monitoring"
     options(:modules => node["monitoring"]["pyscripts"],
-            :paths => [node["collectd"]["plugin_dir"]])
+            :paths => [platform_options["collectd_plugin_dir"]])
   end
   unless new_resource.alarms.nil?
     # we need to make monitors for these
