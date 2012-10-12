@@ -22,7 +22,7 @@ include Chef::Mixin::LanguageIncludeRecipe
 actions :measure
 
 attribute :name, :kind_of => String
-attribute :type, :kind_of => String, :equal_to => [ "syslog", "load",
+attribute :type, :kind_of => String, :equal_to => [ "cpu", "syslog", "load",
                                                     "df", "disk",
                                                     "interface", "pyscript",
                                                     "mysql", "proc",
