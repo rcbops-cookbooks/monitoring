@@ -67,7 +67,7 @@ def proc_metric(new_resource)
   # hashes to keep from breaking existing install
 
   node["monitoring"]["procs"] ||= {}
-  node["monitoring"]["procs"][new_resource.proc_name] = new_resource.proc_regex
+  node.set["monitoring"]["procs"][new_resource.proc_name] = new_resource.proc_regex
 
   matches = node["monitoring"]["procs"].reject {|k,v| v.nil? }
   process = node["monitoring"]["procs"].select {|k,v| v.nil? }
@@ -246,7 +246,7 @@ def mysql_metric(new_resource)
   options.merge({"MasterStats" => false })
 
   node["monitoring"]["dbs"] ||= {}
-  node["monitoring"]["dbs"][new_resource.db] = options
+  node.set["monitoring"]["dbs"][new_resource.db] = options
 
   collectd_plugin "mysql" do
     template "collectd-plugin-mysql.conf.erb"
