@@ -122,7 +122,7 @@ def pyscript_metric(new_resource)
   # IGNORE FOODCRITIC FC023
   if platform?("ubuntu")
     package "libpython2.7" do
-      action :upgrade
+      action :install
     end
   end
 
