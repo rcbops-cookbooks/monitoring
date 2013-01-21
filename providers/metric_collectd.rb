@@ -66,7 +66,7 @@ def proc_metric(new_resource)
   # these used to be in arrays, so we'll convert them to
   # hashes to keep from breaking existing install
 
-  node["monitoring"]["procs"] ||= {}
+  node.set_unless["monitoring"]["procs"] = {}
   node.set["monitoring"]["procs"][new_resource.proc_name] = new_resource.proc_regex
 
   matches = node["monitoring"]["procs"].reject {|k,v| v.nil? }
@@ -245,7 +245,7 @@ def mysql_metric(new_resource)
 
   options.merge({"MasterStats" => false })
 
-  node["monitoring"]["dbs"] ||= {}
+  node.set_unless["monitoring"]["dbs"] = {}
   node.set["monitoring"]["dbs"][new_resource.db] = options
 
   collectd_plugin "mysql" do
