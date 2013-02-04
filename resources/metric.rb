@@ -17,7 +17,12 @@
 # limitations under the License.
 #
 
-include Chef::DSL::Recipe
+if node["chef_packages"]["chef"]["version"].to_i >= 11
+  include Chef::DSL::Recipe
+else
+  include Chef::Mixin::LanguageIncludeRecipe
+end
+
 
 actions :measure
 
