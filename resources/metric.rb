@@ -79,13 +79,16 @@ def initialize(name, run_context=nil)
   # this is a bit hackish... these should be set
   @action = :measure
   set_platform_default_providers
+  if node["monitoring"]["metric_provider"] == "collectd"
+    @run_context.include_recipe "collectd"
+  end
 end
 
 private
 def set_platform_default_providers
   provider = Chef::Provider::MonitoringMetricNull
   if node["monitoring"]["metric_provider"] == "collectd"
-    include_recipe "collectd"
+#    include_recipe "collectd"
     provider = Chef::Provider::MonitoringMetricCollectd
   end
 
