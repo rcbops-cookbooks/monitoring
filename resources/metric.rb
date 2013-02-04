@@ -17,7 +17,7 @@
 # limitations under the License.
 #
 
-include Chef::Mixin::LanguageIncludeRecipe
+include Chef::DSL::Recipe
 
 actions :measure
 
