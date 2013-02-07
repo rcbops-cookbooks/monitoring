@@ -18,7 +18,7 @@
 #
 
 if node["chef_packages"]["chef"]["version"].to_i >= 11
-  include Chef::DSL::Recipe
+  include Chef::DSL::IncludeRecipe
 else
   include Chef::Mixin::LanguageIncludeRecipe
 end
