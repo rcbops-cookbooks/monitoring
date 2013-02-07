@@ -23,7 +23,11 @@
 # It is kind of abusive, though.  <shrug>
 #   -- Ron
 
-include Chef::Mixin::LanguageIncludeRecipe
+if node["chef_packages"]["chef"]["version"].to_i >= 11
+      include Chef::DSL::Recipe
+else
+      include Chef::Mixin::LanguageIncludeRecipe
+end
 
 actions :monitor
 
