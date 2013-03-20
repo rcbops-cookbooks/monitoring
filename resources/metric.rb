@@ -30,8 +30,8 @@ attribute :name, :kind_of => String
 attribute :type, :kind_of => String, :equal_to => [ "cpu", "syslog", "load",
                                                     "df", "disk",
                                                     "interface", "pyscript",
-                                                    "mysql", "proc",
-                                                    "libvirt" ]
+                                                    "mysql", "proc", "memory",
+                                                    "swap", "libvirt" ]
 
 # Thresholds
 attribute :warning_max, :kind_of => String
