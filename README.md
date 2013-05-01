@@ -130,8 +130,16 @@ system does.
 
 Example:
 
+    # matching a process name
     monitoring_procmon "apache" do
       process_name "apache2"
+      start_cmd "/etc/init.d/apache2 start"
+      stop_cmd "/etc/init.d/apache2 stop"
+    end
+
+    # using a pid file
+    monitoring_procmon "apache" do
+      pid_file "/var/run/httpd.pid"
       start_cmd "/etc/init.d/apache2 start"
       stop_cmd "/etc/init.d/apache2 stop"
     end
