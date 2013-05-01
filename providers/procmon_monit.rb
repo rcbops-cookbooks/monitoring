@@ -27,6 +27,7 @@
 action :monitor do
   monit_procmon new_resource.name do
     process_name new_resource.process_name
+    pid_file new_resource.pid_file
     start_cmd new_resource.start_cmd
     stop_cmd new_resource.stop_cmd
     service_bin new_resource.service_bin
