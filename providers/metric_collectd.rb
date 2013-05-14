@@ -28,7 +28,7 @@ end
 def _alarm_keys(new_resource)
   @alarm_keys.inject({}) do |hsh, v|
     if new_resource.send(v.to_s)
-      value = new_resource.send(v.to_s)
+      new_resource.send(v.to_s)
       hsh.merge(v => new_resource.send(v.to_s).to_f)
     else
       hsh
@@ -38,9 +38,11 @@ end
 
 def df_metric(new_resource)
   collectd_plugin "df" do
-    options(:report_reserved => false,
-            "FSType" => new_resource.ignore_fs,
-            :ignore_selected => true)
+    options(
+      :report_reserved => false,
+      "FSType" => new_resource.ignore_fs,
+      :ignore_selected => true
+    )
   end
 
   if _must_has_alerting(new_resource)
@@ -67,26 +69,30 @@ def proc_metric(new_resource)
   # hashes to keep from breaking existing install
 
   node.set_unless["monitoring"]["procs"] = {}
-  node.set["monitoring"]["procs"][new_resource.proc_name] = new_resource.proc_regex
+  node.set["monitoring"]["procs"][new_resource.proc_name] =
+    new_resource.proc_regex
 
-  matches = node["monitoring"]["procs"].reject {|k,v| v.nil? }
-  process = node["monitoring"]["procs"].select {|k,v| v.nil? }
+  matches = node["monitoring"]["procs"].reject { |k, v| v.nil? }
+  process = node["monitoring"]["procs"].select { |k, v| v.nil? }
 
   collectd_plugin "processes" do
     template "collectd-plugin-processes.conf.erb"
     cookbook "monitoring"
 
-    options(:process_match => Hash[*matches.flatten],
-            :process => Hash[*process.flatten].keys)
+    options(
+      :process_match => Hash[*matches.flatten],
+      :process => Hash[*process.flatten].keys
+    )
 
   end
 
   collectd_threshold new_resource.name do
     options({ "plugin_processes" => {
-                :instance => new_resource.proc_name,
-                "type_ps_count" => {
-                  :data_source => "processes"
-                }.merge(new_resource.alarms)}})
+      :instance => new_resource.proc_name,
+      "type_ps_count" => {
+        :data_source => "processes"
+      }.merge(new_resource.alarms)
+    } })
   end
 end
 
@@ -115,22 +121,13 @@ end
 # independent way.  This really assumes that the python scripts are
 # native collectd plugins, which doesn't make them very useful outside
 # of collectd.
-def pyscript_metric(new_resource)
-  mod_name = new_resource.script.sub(/\.(py|erb)$/,"")
-  node.set["monitoring"]["pyscripts"][mod_name] = (new_resource.options || {})
+def _render_python_script(new_resource)
+  plugin_dir = platform_options["collectd_plugin_dir"]
 
-  # IGNORE FOODCRITIC FC023
-  if platform?("ubuntu")
-    package "libpython2.7" do
-      action :install
-    end
-  end
-
-  platform_options = node["collectd"]["platform"]
   if new_resource.script.match("\.erb$")
     # it's a template file
     base_script = new_resource.script.split(".")[0...-1].join(".")
-    template ::File.join(platform_options["collectd_plugin_dir"], base_script) do
+    template ::File.join(plugin_dir, base_script) do
       source new_resource.script
       owner "root"
       group "root"
@@ -138,13 +135,27 @@ def pyscript_metric(new_resource)
       variables new_resource.variables
     end
   else
-    cookbook_file ::File.join(platform_options["collectd_plugin_dir"], new_resource.script) do
+    cookbook_file ::File.join(plugin_dir, new_resource.script) do
       source new_resource.script
       owner "root"
       group "root"
       mode "0644"
     end
   end
+end
+
+def pyscript_metric(new_resource)
+  mod_name = new_resource.script.sub(/\.(py|erb)$/, "")
+  node.set["monitoring"]["pyscripts"][mod_name] = (new_resource.options || {})
+
+  package "libpython2.7" do
+    action :install
+    only_if { platform?("ubuntu") }
+  end
+
+  platform_options = node["collectd"]["platform"]
+
+  _render_python_script(new_resource)
 
   #collectd cookbook's pythonplugin template requires all monitored
   #things to be passed in at once in the format
@@ -152,13 +163,15 @@ def pyscript_metric(new_resource)
   collectd_plugin "python" do
     template "collectd-plugin-python.conf.erb"
     cookbook "monitoring"
-    options(:modules => node["monitoring"]["pyscripts"],
-            :paths => [platform_options["collectd_plugin_dir"]])
+    options(
+      :modules => node["monitoring"]["pyscripts"],
+      :paths => [platform_options["collectd_plugin_dir"]]
+    )
   end
   unless new_resource.alarms.nil?
     # we need to make monitors for these
     new_resource.alarms.each_pair do |plugin, warnings|
-      collectd_threshold "#{new_resource.name}-#{plugin.gsub(".","-")}" do
+      collectd_threshold "#{new_resource.name}-#{plugin.gsub(".", "-")}" do
         options({ "plugin_#{plugin}" => warnings })
       end
     end
@@ -181,7 +194,7 @@ def interface_metric(new_resource)
   end
 
   if _must_has_alerting(new_resource)
-    [ "rx", "tx" ].each do |ds|
+    ["rx", "tx"].each do |ds|
       alert_options = {
         "plugin_interface" => {
           "type_if_octets" => {
@@ -227,23 +240,24 @@ end
 
 def libvirt_metric(new_resource)
   collectd_plugin "libvirt" do
-    options(:connection => "qemu:///system",
-            :hostname_format => "name",
-            :refresh_interval => 60
-            )
+    options(
+      :connection => "qemu:///system",
+      :hostname_format => "name",
+      :refresh_interval => 60
+    )
   end
 end
 
 def mysql_metric(new_resource)
   options = {}
 
-  [ "host", "user", "password", "port"].each do |attr|
+  ["host", "user", "password", "port"].each do |attr|
     if new_resource.send(attr)
       options[attr.capitalize] = new_resource.send(attr)
     end
   end
 
-  options.merge({"MasterStats" => false })
+  options.merge("MasterStats" => false)
 
   node.set_unless["monitoring"]["dbs"] = {}
   node.set["monitoring"]["dbs"][new_resource.db] = options
@@ -259,10 +273,12 @@ def mysql_metric(new_resource)
   new_resource.alarms.each_pair do |alarm, thresholds|
     collectd_threshold "mysql-#{alarm}" do
       options("host_#{new_resource.host}" => {
-                "plugin_mysql" => { "type_mysql_threads" => {
-                    :data_source => "connected"
-                  }.merge(thresholds.inject({}) { |hsh,(k,v)| hsh.merge(k=>v.to_f) })
-                }})
+        "plugin_mysql" => {
+          "type_mysql_threads" => {
+            :data_source => "connected"
+          }.merge(thresholds.inject({}) { |hsh, (k, v)| hsh.merge(k=>v.to_f) })
+        }
+      })
     end
   end
 end
@@ -274,11 +290,14 @@ end
 #
 action :measure do
   # we'll absorb metrics we don't understand.
-  @alarm_keys = [ :failure_max, :failure_min, :warning_max, :warning_min ]
+  @alarm_keys = [:failure_max, :failure_min, :warning_max, :warning_min]
 
 
   if not self.respond_to?("#{new_resource.type}_metric")
-    Chef::Log.error("Selected metric provider (collectd) cannot provide metric #{new_resource.type}")
+    msg = "Selected metric provider (collectd) cannot provide metric " .
+      new_resource.type
+
+    Chef::Log.error(msg)
   else
     self.send("#{new_resource.type}_metric".to_sym, new_resource)
     new_resource.updated_by_last_action(true)

@@ -27,11 +27,12 @@ end
 actions :measure
 
 attribute :name, :kind_of => String
-attribute :type, :kind_of => String, :equal_to => [ "cpu", "syslog", "load",
-                                                    "df", "disk",
-                                                    "interface", "pyscript",
-                                                    "mysql", "proc", "memory",
-                                                    "swap", "libvirt" ]
+attribute :type, :kind_of => String, :equal_to => [
+  "cpu", "syslog", "load",
+  "df", "disk",
+  "interface", "pyscript",
+  "mysql", "proc", "memory",
+  "swap", "libvirt"]
 
 # Thresholds
 attribute :warning_max, :kind_of => String
@@ -67,11 +68,12 @@ attribute :db, :kind_of => String
 
 # DF
 attribute :mountpoint, :kind_of => String
-attribute :ignore_fs, :kind_of => Array, :default => [ "proc", "sysfs",
-                                                       "fusectl", "debugfs",
-                                                       "securityfs",
-                                                       "devtmpfs", "devpts",
-                                                       "tmpfs", "xenfs" ]
+attribute :ignore_fs, :kind_of => Array, :default => [
+  "proc", "sysfs",
+  "fusectl", "debugfs",
+  "securityfs",
+  "devtmpfs", "devpts",
+  "tmpfs", "xenfs"]
 
 # INTERFACE
 attribute :interface, :kind_of => String
@@ -93,13 +95,14 @@ private
 def set_platform_default_providers
   provider = Chef::Provider::MonitoringMetricNull
   if node["monitoring"]["metric_provider"] == "collectd"
-#    include_recipe "collectd"
+    #    include_recipe "collectd"
     provider = Chef::Provider::MonitoringMetricCollectd
   end
 
   # this repeated conflation of strings and symbols is bothersome
-  Chef::Platform.set(:platform => node["platform"].to_sym,
-                     :resource => :monitoring_metric,
-                     :provider => provider
-                     )
+  Chef::Platform.set(
+    :platform => node["platform"].to_sym,
+    :resource => :monitoring_metric,
+    :provider => provider
+  )
 end
