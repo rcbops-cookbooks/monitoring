@@ -45,4 +45,29 @@ describe_recipe "monitoring_test::default" do
     it { service("collectd").must_be_enabled }
     it { service("collectd").must_be_running }
   end
+
+  describe "pyscript_metric" do
+    let(:plugin_dir) { node["collectd"]["platform"]["collectd_plugin_dir"] }
+
+    describe "with templated script" do
+      let(:plugin) { file(::File.join(plugin_dir, "pyscript-template.py")) }
+      it "generates python plugin" do
+        plugin.must_exist
+        plugin.must_include('option = "value"')
+        plugin.must_have(:mode, "0644")
+        plugin.must_have(:owner, "root")
+        plugin.must_have(:group, "root")
+      end
+    end
+
+    describe "with file script" do
+      let(:plugin) { file(::File.join(plugin_dir, "pyscript-file.py")) }
+      it "copies python plugin" do
+        plugin.must_exist
+        plugin.must_have(:mode, "0644")
+        plugin.must_have(:owner, "root")
+        plugin.must_have(:group, "root")
+      end
+    end
+  end
 end

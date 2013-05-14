@@ -121,7 +121,7 @@ end
 # independent way.  This really assumes that the python scripts are
 # native collectd plugins, which doesn't make them very useful outside
 # of collectd.
-def _render_python_script(new_resource)
+def _render_python_script(new_resource, platform_options)
   plugin_dir = platform_options["collectd_plugin_dir"]
 
   if new_resource.script.match("\.erb$")
@@ -155,7 +155,7 @@ def pyscript_metric(new_resource)
 
   platform_options = node["collectd"]["platform"]
 
-  _render_python_script(new_resource)
+  _render_python_script(new_resource, platform_options)
 
   #collectd cookbook's pythonplugin template requires all monitored
   #things to be passed in at once in the format

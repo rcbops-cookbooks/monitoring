@@ -26,3 +26,14 @@ end
 monitoring_metric "cron" do
   type "syslog"
 end
+
+monitoring_metric "script-from-template" do
+  type "pyscript"
+  script "pyscript-template.py.erb"
+  variables :option => :value
+end
+
+monitoring_metric "script-from-file" do
+  type "pyscript"
+  script "pyscript-file.py"
+end
