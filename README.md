@@ -24,97 +24,33 @@ differences.
 Requirements
 ============
 
- * monit (required by monit procmon provider)
- * collectd (required by collectd monitoring/alerting provider)
+Chef 11.0 or higher required (for Chef environment use).
 
-Attributes
-==========
+Platforms
+---------
 
-Default values
+This cookbook is actively tested on the following platforms/versions:
 
- * default["monitoring"]["metric_provider"] = "none"
- * default["monitoring"]["alarm_provider"] = "none"
- * default["monitoring"]["procmon_provider"] = "monit"
+* Ubuntu-12.04
+* CentOS-6.3
 
-Valid values for metric provider:
+While not actively tested, this cookbook should also work the following platforms:
 
- * "none"
- * "collectd"
+* Debian/Mint derivitives
+* Amazon/Oracle/Scientific/RHEL
 
-Valid values for alarm provider:
+Cookbooks
+---------
 
- * "none"
- * "collectd"
+The following cookbooks are dependencies:
 
-Valid values for procmon provider:
+* monit (required by monit procmon provider)
+* collectd (required by collectd monitoring/alerting provider)
 
- * "none"
- * "monit"
+Resources/Providers
+===================
 
-Usage
-=====
-
-Monitoring
-----------
-
-Basically, the concept is that a provider provides best effort
-implementions of a variety of metrics and alerts.  This might be
-enough for a specific implementation, but if more monitoring is
-desired, it can be layered on top of the monitoring provided by the
-openstack cookbooks.  For example, to use a monitoring package or
-alerting package not offered by this provider, the monitoring defaults
-could be set to "none", and a completely different monitoring system
-could be dropped in on top.
-
-Or, it could be set to collectd, and then layer additional
-environment-specific monitoring on top of the existing collectd
-monitoring.
-
-Either way, the objective is to provide a simple baseline monitoring
-that can be overriden or enhanced.
-
-To use a monitoring provider, set the appropriate provider using the
-attributes above, and then create a monitoring definition:
-
-    monitoring_metric "syslog" do
-      type "syslog"
-    end
-
-Valid types include:
-
- * syslog
- * cpu
- * disk
- * interface
- * memory
- * swap
- * load
-
-In addition, there is a "pyscript" provider that in the case of collectd
-expects a collectd python plugin:
-
-    monitoring_metric "cluster-stats" do
-      type "pyscript"
-      script "cluster-stats.py"
-    end
-
-In this format, it will generate cluster-stats.py in the appropriate
-provider-specific location from a cookbook_file.  If the script ends
-with ".erb", it will template it, using any options provided.
-Example:
-
-    monitoring_metric "cluster-stats" do
-      type "pyscript"
-      script "cluster-stats.py.erb"
-      options("endpoint" => "http://localhost:8080/" ... )
-    end
-
-In the future, it would be groovy to make arbitrary scripts in
-arbitrary languages that emit data in "key=value" format, and convert
-that output format to the format that the concrete monitoring provider
-can use.  Patches gratefully accepted.  Also for new providers, obviously.
-
-Procmon
+procmon
 -------
 
 Process monitoring currently is implemented with monit, but could be
@@ -151,3 +87,125 @@ Alerting
 --------
 
 Not complete yet.... please wait.
+
+metric
+------
+
+Basically, the concept is that a provider provides best effort
+implementions of a variety of metrics and alerts.  This might be
+enough for a specific implementation, but if more monitoring is
+desired, it can be layered on top of the monitoring provided by the
+openstack cookbooks.  For example, to use a monitoring package or
+alerting package not offered by this provider, the monitoring defaults
+could be set to "none", and a completely different monitoring system
+could be dropped in on top.
+
+Or, it could be set to collectd, and then layer additional
+environment-specific monitoring on top of the existing collectd
+monitoring.
+
+Either way, the objective is to provide a simple baseline monitoring
+that can be overriden or enhanced.
+
+To use a monitoring provider, set the appropriate provider using the
+attributes above, and then create a monitoring definition:
+
+    monitoring_metric "syslog" do
+      type "syslog"
+    end
+
+Valid types include:
+
+* syslog
+* cpu
+* disk
+* interface
+* memory
+* swap
+* load
+
+In addition, there is a "pyscript" provider that in the case of collectd
+expects a collectd python plugin:
+
+    monitoring_metric "cluster-stats" do
+      type "pyscript"
+      script "cluster-stats.py"
+    end
+
+In this format, it will generate cluster-stats.py in the appropriate
+provider-specific location from a cookbook_file.  If the script ends
+with ".erb", it will template it, using any options provided.
+Example:
+
+    monitoring_metric "cluster-stats" do
+      type "pyscript"
+      script "cluster-stats.py.erb"
+      options("endpoint" => "http://localhost:8080/" ... )
+    end
+
+In the future, it would be groovy to make arbitrary scripts in
+arbitrary languages that emit data in "key=value" format, and convert
+that output format to the format that the concrete monitoring provider
+can use.  Patches gratefully accepted.  Also for new providers, obviously.
+
+Recipes
+=======
+
+default
+-------
+Configuring monitoring and metrics using the included LWRP
+
+Attributes
+==========
+
+* `default["monitoring"]["metric_provider"]` - The monitoring metrics provider
+* `default["monitoring"]["alarm_provider"]` - The monitoring alarm provider
+* `default["monitoring"]["procmon_provider"]` - The monitoring procmon provider
+* `default["monitoring"]["pyscripts"]` - The list of monitoring python scripts
+
+Valid values for `metric_provider`:
+
+* "none"
+* "collectd"
+
+Valid values for `alarm_provider`:
+
+* "none"
+* "collectd"
+
+Valid values for `procmon_provider`:
+
+* "none"
+* "monit"
+
+Templates
+=========
+* `collectd-plugin-mysql.conf.erb` - Collectd plugin for mysql metrics
+* `collectd-plugin-processes.conf.erb` - Collectd plugin for processes metrics
+* `collectd-plugin-python.conf.erb` - Collectd plugin for python scripts
+
+License and Author
+==================
+
+Author:: Justin Shepherd (<justin.shepherd@rackspace.com>)
+Author:: Jason Cannavale (<jason.cannavale@rackspace.com>)
+Author:: Ron Pedde (<ron.pedde@rackspace.com>)
+Author:: Joseph Breu (<joseph.breu@rackspace.com>)
+Author:: William Kelly (<william.kelly@rackspace.com>)
+Author:: Darren Birkett (<darren.birkett@rackspace.co.uk>)
+Author:: Evan Callicoat (<evan.callicoat@rackspace.com>)
+Author:: Chris Laco (<chris.laco@rackspace.com>)
+
+Copyright 2012, Rackspace US, Inc.
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.

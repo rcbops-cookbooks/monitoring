@@ -24,9 +24,9 @@
 #   -- Ron
 
 if node["chef_packages"]["chef"]["version"].to_i >= 11
-      include Chef::DSL::IncludeRecipe
+  include Chef::DSL::IncludeRecipe
 else
-      include Chef::Mixin::LanguageIncludeRecipe
+  include Chef::Mixin::LanguageIncludeRecipe
 end
 
 actions :monitor
@@ -56,8 +56,9 @@ def set_platform_default_providers
   end
 
   # this repeated conflation of strings and symbols is bothersome
-  Chef::Platform.set(:platform => node["platform"].to_sym,
-                     :resource => :monitoring_procmon,
-                     :provider => provider
-                     )
+  Chef::Platform.set(
+    :platform => node["platform"].to_sym,
+    :resource => :monitoring_procmon,
+    :provider => provider
+  )
 end

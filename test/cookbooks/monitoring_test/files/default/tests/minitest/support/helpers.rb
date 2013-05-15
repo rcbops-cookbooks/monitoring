@@ -1,6 +1,6 @@
 #
-# Cookbook Name:: monitoring
-# Attributes:: default
+# Cookbook Name:: monitoring_test
+# Recipe:: default
 #
 # Copyright 2012, Rackspace US, Inc.
 #
@@ -17,7 +17,11 @@
 # limitations under the License.
 #
 
-default["monitoring"]["metric_provider"] = "none"     # collectd || none # cluster_attribute
-default["monitoring"]["alarm_provider"] = "none"      # collectd || none # cluster_attribute
-default["monitoring"]["procmon_provider"] = "monit"   # monit || none # cluster_attribute
-default["monitoring"]["pyscripts"] = {}               # no pyscripts by default # cluster_attribute
+require "chef/mixin/shell_out"
+module MonitoringTestHelpers
+  include Chef::Mixin::ShellOut
+
+  include MiniTest::Chef::Assertions
+  include MiniTest::Chef::Context
+  include MiniTest::Chef::Resources
+end
