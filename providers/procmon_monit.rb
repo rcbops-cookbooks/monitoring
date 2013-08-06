@@ -32,6 +32,7 @@ action :monitor do
     stop_cmd new_resource.stop_cmd
     service_bin new_resource.service_bin
     script_name new_resource.script_name
+    http_check new_resource.http_check
   end
   new_resource.updated_by_last_action(true)
 end
