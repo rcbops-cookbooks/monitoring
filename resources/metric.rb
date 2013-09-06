@@ -64,7 +64,7 @@ attribute :host, :kind_of => String, :default => "localhost"
 attribute :user, :kind_of => String, :default => nil
 attribute :password, :kind_of => String, :default => nil
 attribute :port, :kind_of => Integer, :default => 3306
-attribute :db, :kind_of => String
+attribute :db, :kind_of => String, :default => ""
 
 # DF
 attribute :mountpoint, :kind_of => String
