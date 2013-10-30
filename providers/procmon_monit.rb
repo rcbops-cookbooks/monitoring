@@ -36,3 +36,10 @@ action :monitor do
   end
   new_resource.updated_by_last_action(true)
 end
+
+action :remove do
+  monit_procmon new_resource.name do
+    action :remove
+  end
+  new_resource.updated_by_last_action(true)
+end

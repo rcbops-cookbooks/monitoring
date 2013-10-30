@@ -29,7 +29,8 @@ else
   include Chef::Mixin::LanguageIncludeRecipe
 end
 
-actions :monitor
+actions :monitor, :remove
+default_action :monitor
 
 attribute :name, :kind_of => String
 attribute :process_name, :kind_of => String
